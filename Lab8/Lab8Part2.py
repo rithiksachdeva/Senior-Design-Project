@@ -101,28 +101,42 @@ def create_angle(frame, lane_lines):
     """
     height, width, _ = frame.shape
     left_slope, left_intercept, right_slope, right_intercept = 0, 0, 0, 0
-    for line in lane_lines:
-        for x1, y1, x2, y2 in line:
-            slope, intercept = np.polyfit((x1, x2), (y1, y2), 1)
-            if slope < 0:
-                left_slope += slope
-                left_intercept += intercept
-            else:
-                right_slope += slope
-                right_intercept += intercept
-    
-    # Calculate x-intercept of the left and right lane lines
-    left_x_intercept = int((height - left_intercept) / left_slope)
-    right_x_intercept = int((height - right_intercept) / right_slope)
-    
-    # Calculate angle of the left and right lane lines
-    left_angle = int(np.arctan(left_slope) * 180 / np.pi)
-    right_angle = int(np.arctan(right_slope) * 180 / np.pi)
-    
-    # Calculate the average angle of the two lane lines
-    average_angle = int((left_angle + right_angle) / 2)
-    
+    if lane_lines is not None and len(lane_lines) > 0:
+        for line in lane_lines:
+            for x1, y1, x2, y2 in line:
+                slope, intercept = np.polyfit((x1, x2), (y1, y2), 1)
+                if slope < 0:
+                    left_slope += slope
+                    left_intercept += intercept
+                else:
+                    right_slope += slope
+                    right_intercept += intercept
+
+        # Calculate x-intercept of the left and right lane lines
+        if left_slope != 0:
+            left_x_intercept = int((height - left_intercept) / left_slope)
+        else:
+            left_x_intercept = 0
+
+        if right_slope != 0:
+            right_x_intercept = int((height - right_intercept) / right_slope)
+        else:
+            right_x_intercept = width - 1
+
+        # Calculate angle of the left and right lane lines
+        left_angle = int(np.arctan(left_slope) * 180 / np.pi)
+        right_angle = int(np.arctan(right_slope) * 180 / np.pi)
+
+        # Calculate the average angle of the two lane lines
+        average_angle = int((left_angle + right_angle) / 2)
+    else:
+        # If no lane lines were detected, assume a zero degree angle
+        left_x_intercept = 0
+        right_x_intercept = width - 1
+        average_angle = 0
+
     return average_angle
+
 
    
 LED_GREEN = 11
