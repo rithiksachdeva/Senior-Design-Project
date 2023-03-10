@@ -22,9 +22,6 @@ while True:
     if keyboard == 'q' or keyboard == 27:
         break
 
-
-
-
 camera.release()
 cv2.destroyAllWindows()
 del camera

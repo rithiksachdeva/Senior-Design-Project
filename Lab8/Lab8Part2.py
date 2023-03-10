@@ -9,7 +9,7 @@ def detect_line_segments(cropped_edges):
     # tuning min_threshold, minLineLength, maxLineGap is a trial and error process by hand
     rho = 1  # distance precision in pixel, i.e. 1 pixel
     angle = np.pi / 180  # angular precision in radian, i.e. 1 degree
-    min_threshold = 10  # minimal of votes
+    min_threshold = 100  # minimal of votes
     line_segments = cv2.HoughLinesP(cropped_edges, rho, angle, min_threshold, np.array([]), minLineLength=10, maxLineGap=15)
     return line_segments
 
@@ -85,10 +85,10 @@ def region_of_interest(edges):
 
     # only focus bottom half of the screen
     polygon = np.array([[
-        (0, height * 1 / 2),
-        (width, height * 1 / 2),
-        (width, height),
-        (0, height),
+        (width * 1 / 3, height),
+        (width * 2 / 3, height),
+        (width * 2 / 3, 0),
+        (width * 1 / 3, 0),
     ]], np.int32)
 
     cv2.fillPoly(mask, polygon, 255)
@@ -119,9 +119,8 @@ while True:
 
     roi_image = region_of_interest(edges)
 
-
     # Detect line segments using Hough Lines Transform
-    line_segments = detect_line_segments(edges)
+    line_segments = detect_line_segments(roi_image)
 
     # Average slope and intercept of line segments to get lane lines
     lane_lines = average_slope_intercept(frame, line_segments)

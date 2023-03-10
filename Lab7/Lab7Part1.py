@@ -16,7 +16,7 @@ mode1 = bus.read_byte_data(address, 0)
 print("Mode1 Reg = ", hex(mode1))
 mode1 = mode1 | 0x10
 bus.write_byte_data(address, 0, mode1)
-bus.write_byte_data(address, 0xFE, 101) # corresponds to 100 Hz
+bus.write_byte_data(address, 0xFE, 97) # corresponds to 100 Hz
 mode1 = mode1 & ~0x10
 bus.write_byte_data(address, 0, mode1)
 time.sleep(1)
