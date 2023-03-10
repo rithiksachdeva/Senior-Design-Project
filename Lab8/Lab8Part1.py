@@ -34,7 +34,9 @@ while True:
                 GPIO.output(15, GPIO.HIGH)
     else: # no blob 
         print("NO BLOBS")
-        # Set GPIO pins to low
+        GPIO.output(11, GPIO.LOW)
+        GPIO.output(13, GPIO.LOW)
+        GPIO.output(15, GPIO.LOW)
 
     # display the frame
     cv2.imshow('Camera', frame)
