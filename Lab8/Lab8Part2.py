@@ -94,6 +94,36 @@ def region_of_interest(edges):
     cv2.fillPoly(mask, polygon, 255)
     cropped_edges = cv2.bitwise_and(edges, mask)
     return cropped_edges
+
+def create_angle(frame, lane_lines):
+    """
+    This function finds the angle of the lane lines
+    """
+    height, width, _ = frame.shape
+    left_slope, left_intercept, right_slope, right_intercept = 0, 0, 0, 0
+    for line in lane_lines:
+        for x1, y1, x2, y2 in line:
+            slope, intercept = np.polyfit((x1, x2), (y1, y2), 1)
+            if slope < 0:
+                left_slope += slope
+                left_intercept += intercept
+            else:
+                right_slope += slope
+                right_intercept += intercept
+    
+    # Calculate x-intercept of the left and right lane lines
+    left_x_intercept = int((height - left_intercept) / left_slope)
+    right_x_intercept = int((height - right_intercept) / right_slope)
+    
+    # Calculate angle of the left and right lane lines
+    left_angle = int(np.arctan(left_slope) * 180 / np.pi)
+    right_angle = int(np.arctan(right_slope) * 180 / np.pi)
+    
+    # Calculate the average angle of the two lane lines
+    average_angle = int((left_angle + right_angle) / 2)
+    
+    return average_angle
+
    
 LED_GREEN = 11
 LED_BLUE = 13
@@ -125,6 +155,9 @@ while True:
     # Average slope and intercept of line segments to get lane lines
     lane_lines = average_slope_intercept(frame, line_segments)
     print(lane_lines)
+
+    angle = create_angle(frame,lane_lines)
+    print(angle)
 
     # Calculate angle that describes the tilt of the lane
     line_image = display_lines(frame, lane_lines)
