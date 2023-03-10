@@ -70,41 +70,30 @@ def average_slope_intercept(frame, line_segments):
 
     return lane_lines
 
-def calculate_angle(frame, lane_lines):
-    """
-    This function calculates the angle that describes the tilt of the lane
-    """
-    height, width, _ = frame.shape
-    if len(lane_lines) == 0:
-        return 0
+def display_lines(frame, lines, line_color=(0, 255, 255), line_width=20):
+    line_image = np.zeros_like(frame)
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
+    line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+    return line_image
 
-    # Extract the slopes and intercepts of the lane lines
-    slopes = []
-    intercepts = []
-    for line in lane_lines:
-        for x1, y1, x2, y2 in line:
-            slope, intercept = np.polyfit((x1, x2), (y1, y2), 1)
-            slopes.append(slope)
-            intercepts.append(intercept)
+def region_of_interest(edges):
+    height, width = edges.shape
+    mask = np.zeros_like(edges)
 
-    # Calculate the average slope and intercept of the lane lines
-    avg_slope = np.mean(slopes)
-    avg_intercept = np.mean(intercepts)
+    # only focus bottom half of the screen
+    polygon = np.array([[
+        (0, height * 1 / 2),
+        (width, height * 1 / 2),
+        (width, height),
+        (0, height),
+    ]], np.int32)
 
-    # Calculate the x-coordinate of the bottom of the frame
-    bottom_x = int((height - avg_intercept) / avg_slope)
-
-    # Calculate the x-coordinate of the center of the frame
-    center_x = int(width / 2)
-
-    # Calculate the angle between the lane lines and the horizontal axis
-    angle_radian = np.arctan2(height - bottom_x, center_x - bottom_x)
-    angle_degree = np.degrees(angle_radian)
-
-    if angle_degree < 0:
-        angle_degree += 360
-
-    return angle_degree
+    cv2.fillPoly(mask, polygon, 255)
+    cropped_edges = cv2.bitwise_and(edges, mask)
+    return cropped_edges
    
 LED_GREEN = 11
 LED_BLUE = 13
@@ -128,6 +117,9 @@ while True:
     # Apply Canny edge filter
     edges = cv2.Canny(gauss_image, 50, 150)
 
+    roi_image = region_of_interest(edges)
+
+
     # Detect line segments using Hough Lines Transform
     line_segments = detect_line_segments(edges)
 
@@ -136,16 +128,17 @@ while True:
     print(lane_lines)
 
     # Calculate angle that describes the tilt of the lane
-    angle = calculate_angle(frame, lane_lines)
-    print(angle)
+    line_image = display_lines(frame, lane_lines)
 
     # Display camera frame, blurred frame, and canny frame
     cv2.imshow("Camera", frame)
-    cv2.imshow("Blurred Frame", gauss_image)
-    cv2.imshow("Canny Frame", edges)
+    #cv2.imshow("Blurred Frame", gauss_image)
+    #cv2.imshow("Canny Frame", edges)
+    cv2.imshow('New Image', roi_image)
+    cv2.imshow('Line Image', line_image)
 
     # Light up appropriate LED based on the angle
-    if angle > -70 and angle < 70:
+    '''if angle > -70 and angle < 70:
         print("MIDDLE 140 degrees")
         GPIO.output(LED_GREEN, GPIO.HIGH)
         GPIO.output(LED_BLUE, GPIO.LOW)
@@ -159,7 +152,7 @@ while True:
         print("less than -70 degrees")
         GPIO.output(LED_GREEN, GPIO.LOW)
         GPIO.output(LED_BLUE, GPIO.LOW)
-        GPIO.output(LED_RED, GPIO.HIGH)
+        GPIO.output(LED_RED, GPIO.HIGH)'''
 
     # Wait for key press to exit
     if cv2.waitKey(1) == ord('q'):
