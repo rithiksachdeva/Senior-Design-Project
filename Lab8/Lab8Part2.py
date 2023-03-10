@@ -133,9 +133,11 @@ while True:
 
     # Average slope and intercept of line segments to get lane lines
     lane_lines = average_slope_intercept(frame, line_segments)
+    print(lane_lines)
 
     # Calculate angle that describes the tilt of the lane
     angle = calculate_angle(frame, lane_lines)
+    print(angle)
 
     # Display camera frame, blurred frame, and canny frame
     cv2.imshow("Camera", frame)
