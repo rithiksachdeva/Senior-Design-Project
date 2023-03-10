@@ -101,6 +101,9 @@ def calculate_angle(frame, lane_lines):
     angle_radian = np.arctan2(height - bottom_x, center_x - bottom_x)
     angle_degree = np.degrees(angle_radian)
 
+    if angle_degree < 0:
+        angle_degree += 360
+
     return angle_degree
    
 LED_GREEN = 11
