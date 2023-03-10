@@ -1,25 +1,31 @@
 import cv2
-import numpy as np
+import nanocamera as nano
 
-camera = nano.Camera()
-cap = cv2.VideoCapture(0)
+camera = nano.Camera(flip=0, width=1280, height=800, fps=30)
+
 
 while True:
-    _, frame = cap.read()
+    frame = camera.read()
 
     # Apply GaussianBlur
-    blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+    gauss_image = cv2.GaussianBlur(frame, (3, 3), 0)
 
     # Apply Canny edge detector
-    edges = cv2.Canny(blurred, 50, 150)
+    edges = cv2.Canny(gauss_image, 50, 150)
 
     # Display images
     cv2.imshow('Original', frame)
-    cv2.imshow('Blurred', blurred)
+    cv2.imshow('Blurred', gauss_image)
     cv2.imshow('Edges', edges)
 
-    if cv2.waitKey(1) == ord('q'):
+    keyboard = cv2.waitKey(30)
+    if keyboard == 'q' or keyboard == 27:
         break
 
-cap.release()
+
+
+
+camera.release()
 cv2.destroyAllWindows()
+del camera
+print('Stopped')
