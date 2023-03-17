@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import nanocamera as nano
 import Jetson.GPIO as GPIO
+import math
 import time
 import logging
 
@@ -15,6 +16,7 @@ def detect_line_segments(cropped_edges):
 
 def make_points(frame, line):
     height, width, _ = frame.shape
+
     slope, intercept = line
     y1 = height  # bottom of the frame
     y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
@@ -95,33 +97,19 @@ def region_of_interest(edges):
     cropped_edges = cv2.bitwise_and(edges, mask)
     return cropped_edges
 
-def create_angle(frame, lane_lines):
+def create_angle(lane_lines):
     """
     This function finds the angle of the lane lines
     """
-    height, width, _ = frame.shape
-    left_slope, left_intercept, right_slope, right_intercept = 0, 0, 0, 0
+    left_slope, right_slope = 0, 0
     if lane_lines is not None and len(lane_lines) > 0:
         for line in lane_lines:
             for x1, y1, x2, y2 in line:
-                slope, intercept = np.polyfit((x1, x2), (y1, y2), 1)
+                slope = np.polyfit((x1, x2), (y1, y2), 1)
                 if slope < 0:
                     left_slope += slope
-                    left_intercept += intercept
                 else:
                     right_slope += slope
-                    right_intercept += intercept
-
-        # Calculate x-intercept of the left and right lane lines
-        if left_slope != 0:
-            left_x_intercept = int((height - left_intercept) / left_slope)
-        else:
-            left_x_intercept = 0
-
-        if right_slope != 0:
-            right_x_intercept = int((height - right_intercept) / right_slope)
-        else:
-            right_x_intercept = width - 1
 
         # Calculate angle of the left and right lane lines
         left_angle = int(np.arctan(left_slope) * 180 / np.pi)
@@ -131,8 +119,6 @@ def create_angle(frame, lane_lines):
         average_angle = int((left_angle + right_angle) / 2)
     else:
         # If no lane lines were detected, assume a zero degree angle
-        left_x_intercept = 0
-        right_x_intercept = width - 1
         average_angle = 0
 
     return average_angle
@@ -165,37 +151,54 @@ while True:
 
     # Detect line segments using Hough Lines Transform
     line_segments = detect_line_segments(roi_image)
+    #print(line_segment)
+
+    if line_segments is not None and len(line_segments) > 0:
+        for line in line_segments:
+            x1,y1,x2,y2=line[0]
+            angle = math.atan2((y2-y1), (x2-x1))
+            angle = math.degrees(angle)
+            print(angle)
+            if angle > 5:
+                print("LED BLUE")
+                GPIO.output(13, GPIO.HIGH)
+            elif angle < -5:
+                print("LED RED")
+                GPIO.output(15, GPIO.HIGH)
+            else:
+                print("LED GREEN")
+                GPIO.output(11, GPIO.HIGH)
+            
+        
+
 
     # Average slope and intercept of line segments to get lane lines
     lane_lines = average_slope_intercept(frame, line_segments)
-    print(lane_lines)
-
-    angle = create_angle(frame,lane_lines)
-    print(angle)
+    #print(lane_lines)
 
     # Calculate angle that describes the tilt of the lane
     line_image = display_lines(frame, lane_lines)
 
     # Display camera frame, blurred frame, and canny frame
     cv2.imshow("Camera", frame)
-    #cv2.imshow("Blurred Frame", gauss_image)
-    #cv2.imshow("Canny Frame", edges)
-    cv2.imshow('New Image', roi_image)
+    cv2.imshow("Blurred Frame", gauss_image)
+    cv2.imshow("Canny Frame", edges)
+    #cv2.imshow('New Image', roi_image)
     cv2.imshow('Line Image', line_image)
 
-    # Light up appropriate LED based on the angle
-    '''if angle > -70 and angle < 70:
-        print("MIDDLE 140 degrees")
+    '''# Light up appropriate LED based on the angle
+    if angle > -10 and angle < 10:
+        print("Case 1")
         GPIO.output(LED_GREEN, GPIO.HIGH)
         GPIO.output(LED_BLUE, GPIO.LOW)
         GPIO.output(LED_RED, GPIO.LOW)
-    elif angle >= 70:
-        print(">70 degrees")
+    elif angle >= 10:
+        print("Case 2")
         GPIO.output(LED_GREEN, GPIO.LOW)
         GPIO.output(LED_BLUE, GPIO.HIGH)
         GPIO.output(LED_RED, GPIO.LOW)
     else:
-        print("less than -70 degrees")
+        print("Case 3")
         GPIO.output(LED_GREEN, GPIO.LOW)
         GPIO.output(LED_BLUE, GPIO.LOW)
         GPIO.output(LED_RED, GPIO.HIGH)'''
