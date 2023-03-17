@@ -20,7 +20,6 @@ serial_port = serial.Serial(
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
 )
-
 # Wait a second to let the port initialize
 time.sleep(1)
 
