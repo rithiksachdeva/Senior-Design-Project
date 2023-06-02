@@ -4,14 +4,21 @@ import threading
 
 stop_signal = threading.Event()
 
-# Assuming UART ports for OpenMV1 and OpenMV2 are '/dev/ttyS1' and '/dev/ttyS2' respectively
-uart_port_openMV1 = '/dev/ttyS1'
-uart_port_openMV2 = '/dev/ttyS2'
-uart_baudrate = 115200  # Assuming baud rate is 115200
-
 # Open UART communication with OpenMV1 and OpenMV2
-ser_openMV1 = serial.Serial(uart_port_openMV1, uart_baudrate)
-ser_openMV2 = serial.Serial(uart_port_openMV2, uart_baudrate)
+ser_openMV1 = serial.Serial(
+    port="/dev/ttyTHS1",
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+)
+ser_openMV2 = serial.Serial(
+    port="/dev/ttyTHS2",
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+)
 
 # Dictionaries for storing tag directions and graph nodes
 tag_directions = {
