@@ -44,7 +44,7 @@ GPIO_TRIGGER_1 = 18  # Change to your pin number
 GPIO_ECHO_1 = 16     # Change to your pin number
 
 GPIO_TRIGGER_2 = 12  # Change to your pin number
-GPIO_ECHO_2 = 10     # Change to your pin number
+GPIO_ECHO_2 = 11     # Change to your pin number
 
 try:
     while True:
