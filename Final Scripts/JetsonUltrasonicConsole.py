@@ -4,10 +4,6 @@ import time
 GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
 
 def read_distance(GPIO_TRIGGER, GPIO_ECHO):
-    # Set pins as output and input
-    GPIO.setup(GPIO_TRIGGER, GPIO.OUT)  # Trigger
-    GPIO.setup(GPIO_ECHO, GPIO.IN)  # Echo
-
     # Set trigger to False (Low)
     GPIO.output(GPIO_TRIGGER, False)
 
@@ -21,6 +17,7 @@ def read_distance(GPIO_TRIGGER, GPIO_ECHO):
 
     # Start the timer
     start = time.time()
+    stop = start
 
     while GPIO.input(GPIO_ECHO) == 0:
         start = time.time()
@@ -31,7 +28,7 @@ def read_distance(GPIO_TRIGGER, GPIO_ECHO):
     # Calculate pulse length
     elapsed = stop - start
 
-    # Distance pulse travelled in that time is 
+    # Distance pulse travelled in that time is
     distance = elapsed * 34300
 
     # That was the distance there and back so halve the value
@@ -45,6 +42,13 @@ GPIO_ECHO_1 = 16     # Change to your pin number
 
 GPIO_TRIGGER_2 = 12  # Change to your pin number
 GPIO_ECHO_2 = 11     # Change to your pin number
+
+# Setup GPIO pins
+GPIO.setup(GPIO_TRIGGER_1, GPIO.OUT)  # Trigger
+GPIO.setup(GPIO_ECHO_1, GPIO.IN)  # Echo
+
+GPIO.setup(GPIO_TRIGGER_2, GPIO.OUT)  # Trigger
+GPIO.setup(GPIO_ECHO_2, GPIO.IN)  # Echo
 
 try:
     while True:
