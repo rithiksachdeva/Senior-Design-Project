@@ -1,38 +1,25 @@
 import Jetson.GPIO as GPIO
 import time
 
-GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
+GPIO.setmode(GPIO.BOARD)
 
 def read_distance(GPIO_TRIGGER, GPIO_ECHO):
-    # Set trigger to False (Low)
-    GPIO.output(GPIO_TRIGGER, False)
-
-    # Allow module to settle
-    time.sleep(0.5)
-
     # Send 10us pulse to trigger
     GPIO.output(GPIO_TRIGGER, True)
     time.sleep(0.00001)
     GPIO.output(GPIO_TRIGGER, False)
 
-    # Start the timer
+    # Wait for start of echo response
+    GPIO.wait_for_edge(GPIO_ECHO, GPIO.RISING)
     start = time.time()
-    stop = start
 
-    while GPIO.input(GPIO_ECHO) == 0:
-        start = time.time()
+    # Wait for end of echo response
+    GPIO.wait_for_edge(GPIO_ECHO, GPIO.FALLING)
+    stop = time.time()
 
-    while GPIO.input(GPIO_ECHO) == 1:
-        stop = time.time()
-
-    # Calculate pulse length
     elapsed = stop - start
 
-    # Distance pulse travelled in that time is
-    distance = elapsed * 34300
-
-    # That was the distance there and back so halve the value
-    distance = distance / 2
+    distance = (elapsed * 34300) / 2
 
     return distance
 
@@ -45,10 +32,10 @@ GPIO_ECHO_2 = 11     # Change to your pin number
 
 # Setup GPIO pins
 GPIO.setup(GPIO_TRIGGER_1, GPIO.OUT)  # Trigger
-GPIO.setup(GPIO_ECHO_1, GPIO.IN)  # Echo
+GPIO.setup(GPIO_ECHO_1, GPIO.IN)      # Echo
 
 GPIO.setup(GPIO_TRIGGER_2, GPIO.OUT)  # Trigger
-GPIO.setup(GPIO_ECHO_2, GPIO.IN)  # Echo
+GPIO.setup(GPIO_ECHO_2, GPIO.IN)      # Echo
 
 try:
     while True:
@@ -60,9 +47,7 @@ try:
         print("Sensor 1 Distance : %.1f cm" % distance1)
         print("Sensor 2 Distance : %.1f cm" % distance2)
 
-        # Wait before the next reading
         time.sleep(1)
 
 except KeyboardInterrupt:
-    # Reset GPIO settings
     GPIO.cleanup()
