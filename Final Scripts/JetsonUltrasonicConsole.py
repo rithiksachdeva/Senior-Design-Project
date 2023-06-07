@@ -10,11 +10,17 @@ def read_distance(GPIO_TRIGGER, GPIO_ECHO):
     GPIO.output(GPIO_TRIGGER, False)
 
     # Wait for start of echo response
-    GPIO.wait_for_edge(GPIO_ECHO, GPIO.RISING)
+    start = GPIO.wait_for_edge(GPIO_ECHO, GPIO.RISING, timeout=500)
+    if start is None:
+        return None
+
     start = time.time()
 
     # Wait for end of echo response
-    GPIO.wait_for_edge(GPIO_ECHO, GPIO.FALLING)
+    stop = GPIO.wait_for_edge(GPIO_ECHO, GPIO.FALLING, timeout=500)
+    if stop is None:
+        return None
+
     stop = time.time()
 
     elapsed = stop - start
@@ -44,8 +50,15 @@ try:
         distance2 = read_distance(GPIO_TRIGGER_2, GPIO_ECHO_2)
 
         # Print the readings
-        print("Sensor 1 Distance : %.1f cm" % distance1)
-        print("Sensor 2 Distance : %.1f cm" % distance2)
+        if distance1 is not None:
+            print("Sensor 1 Distance : %.1f cm" % distance1)
+        else:
+            print("Failed to read from Sensor 1")
+
+        if distance2 is not None:
+            print("Sensor 2 Distance : %.1f cm" % distance2)
+        else:
+            print("Failed to read from Sensor 2")
 
         time.sleep(1)
 
