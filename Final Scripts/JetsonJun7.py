@@ -162,6 +162,17 @@ while True:
                 break
             else:
                 print("Unexpected message: ", tag)
+
+    while True:
+        if ser_openMV1.in_waiting > 0:
+            print("Found message")
+            msg = ser_openMV1.readline().decode('utf-8').strip()
+            print(msg)
+            if msg == "ready to proceed":
+                print("Ready to Proceed \n")
+                break
+            else:
+                print("Unexpected message: ", msg)
                 
     directions = get_directions(start_tag, end_tag)
     print(directions)
